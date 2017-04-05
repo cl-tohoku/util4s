@@ -1,0 +1,30 @@
+# in general
+.settings
+.worksheet
+.cache
+.idea
+.DS_Store
+bin
+/tmp
+out
+tmp
+*.class
+*.log
+
+# for this project
+src/main/haskell
+
+# sbt specific
+.cache/
+.history/
+.lib/
+dist/*
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+
+# Scala-IDE specific
+.scala_dependencies
+.worksheet

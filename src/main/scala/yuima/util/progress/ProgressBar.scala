@@ -47,16 +47,9 @@ class ProgressBar[A, CC[X] <: Traversable[X]](coll         : CC[A],
 
   private var _status = ""
 
-  def status: String = _status
+  def status = _status
 
   def foreach[U](f: A => U): Unit = coll.foreach(count[A] _ andThen f andThen postProcess)
-
-  def map[B](f: A => B): CC[B] = coll.map(count[A] _ andThen f andThen postProcess).asInstanceOf[CC[B]]
-
-  def filter(f: A => Boolean): CC[A] = coll.filter(count[A] _ andThen f andThen postProcess).asInstanceOf[CC[A]]
-
-  def flatMap[B](f: A => GenTraversableOnce[B]): CC[B] = coll.flatMap(
-    count[A] _ andThen f andThen postProcess).asInstanceOf[CC[B]]
 
   private def count[B](b: B) = {
     if (numIter % unit == 0 || numIter == total || numIter == 1) {
@@ -141,6 +134,13 @@ class ProgressBar[A, CC[X] <: Traversable[X]](coll         : CC[A],
     b
   }
 
+  def map[B](f: A => B): CC[B] = coll.map(count[A] _ andThen f andThen postProcess).asInstanceOf[CC[B]]
+
+  def filter(f: A => Boolean): CC[A] = coll.filter(count[A] _ andThen f andThen postProcess).asInstanceOf[CC[A]]
+
+  def flatMap[B](f: A => GenTraversableOnce[B]): CC[B] = coll.flatMap(
+    count[A] _ andThen f andThen postProcess).asInstanceOf[CC[B]]
+
   private def digits(num: Int, d: Int = 1): Int = num / 10 match {
     case 0 => d
     case n => digits(n, d + 1)
@@ -152,7 +152,7 @@ object ProgressBar {
   private var bars = ArrayBuffer[ {def status: String}]()
   private var last = 0
 
-  def show() = {
+  def show(): Unit = {
     val size = bars.size
     val backwards =
       if (last != size) {
@@ -173,7 +173,7 @@ object ProgressBar {
 
   import InfoType._
 
-  def apply[A, CC[X] <: Traversable[X]](coll  : CC[A], name: String, maxWidth: Int,
+  def apply[A, CC[X] <: Traversable[X]](coll: CC[A], name: String, maxWidth: Int,
                                         format: String): ProgressBar[A, CC] = {
     val Array(startChar, doneChar, currentChar, remainingChar, endChar) = format.split("")
     new ProgressBar(coll, name, maxWidth,

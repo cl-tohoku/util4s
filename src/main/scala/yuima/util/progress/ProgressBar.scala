@@ -64,7 +64,6 @@ class ProgressBar[A, CC[X] <: Traversable[X]](coll         : CC[A],
       create()
       ProgressBar.show()
     }
-    b
   }
 
   private def create() = {

@@ -1,6 +1,6 @@
 package yuima.util
 
-import java.io.File
+import java.io.{File, PrintStream}
 import java.math.MathContext
 
 import yuima.util.progress.ProgressBar
@@ -28,6 +28,12 @@ object Controls {
     if (path.isDirectory) path.listFiles().sorted.flatMap(leafFiles)
     else Array(path).filter(fileFilter)
   }
+
+  def withLogFile[A](file: String)(op: => A): A = withLogFile(IO.Out.ps(file))(op)
+
+  def withLogFile[A](log: PrintStream)(op: => A): A = Console.withOut(log) { Console.withErr(log)(op) }
+
+  def withLogFile[A](file: File)(op  : => A): A = withLogFile(IO.Out.ps(file))(op)
 
   implicit class RichDouble(value: Double) {
     def round(digit: Int): Double = BigDecimal(value, new MathContext(digit)).toDouble

@@ -198,7 +198,6 @@ object OptArg {
 
     {
       case (opt :: tail, parser) if (opt == full || abbr.contains(opt)) && !parser.exclusiveFlag(full) =>
-        println("multi opt")
         val (args, rest) = parseOptArgs(tail, argNum)
         validator match {
           case Some(v) if v.validate(build(args)) =>

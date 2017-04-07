@@ -12,7 +12,7 @@ import scala.io.{BufferedSource, Codec, Source}
   */
 object IO {
 
-  def expand(path: String) = {
+  def expand(path: String): String = {
     if (path == "~" || path.startsWith("~/"))
       System.getProperty("user.home") + path.substring(1)
     else path
@@ -23,13 +23,13 @@ object IO {
 
     def fromFile(file: File)(implicit codec: Codec): BufferedSource = Source.fromInputStream(fis(file))(codec)
 
-    def readLines = scala.io.Source.stdin.getLines
+    def readLines: Iterator[String] = scala.io.Source.stdin.getLines
 
     def ois(path: String): ObjectInputStream = ois(fis(expand(path)))
 
     def ois(is: InputStream): ObjectInputStream = new ObjectInputStream(new BufferedInputStream(is))
 
-    def fis(path: String) =
+    def fis(path: String): InputStream =
       if (path.endsWith(".gz")) new GZIPInputStream(new FileInputStream(expand(path)))
       else new FileInputStream(path)
 
@@ -41,18 +41,18 @@ object IO {
 
     def br(file: File): BufferedReader = br(isr(fis(file)))
 
-    def fis(file: File) =
+    def fis(file: File): InputStream =
       if (file.getName.endsWith(".gz")) new GZIPInputStream(new FileInputStream(file))
       else if (file.getName.endsWith(".bz2")) new BZip2CompressorInputStream(new FileInputStream(file))
       else new FileInputStream(file)
 
     def br(reader: Reader): BufferedReader = new BufferedReader(reader)
 
-    def isr(is: InputStream) = new InputStreamReader(is)
+    def isr(is: InputStream): InputStreamReader = new InputStreamReader(is)
 
     def br(path: String): BufferedReader = br(isr(fis(expand(path))))
 
-    def bis(is: InputStream) = new BufferedInputStream(is)
+    def bis(is: InputStream): BufferedInputStream = new BufferedInputStream(is)
   }
 
   object Out {
@@ -62,25 +62,31 @@ object IO {
     def pwWithSameSubPath(file: File, baseOld: File, baseNew: File): PrintWriter =
       pw(baseNew + s"${ file.getAbsolutePath diff baseOld.getAbsolutePath }")
 
-    def pw(path: String): PrintWriter = pw(fos(expand(path)))
-
-    def pw(os: OutputStream) = new PrintWriter(os)
+    def pw(os: OutputStream): PrintWriter = new PrintWriter(os)
 
     def pw(file: File): PrintWriter = pw(fos(file))
 
+    def pw(path: String): PrintWriter = pw(fos(expand(path)))
+
+    def ps(os: OutputStream): PrintStream = new PrintStream(os)
+
+    def ps(file: File): PrintStream = ps(fos(file))
+
+    def ps(path:String): PrintStream = ps(fos(expand(path)))
+
     def bw(path: String): BufferedWriter = bw(osw(fos(expand(path))))
 
-    def bw(writer: Writer) = new BufferedWriter(writer)
+    def bw(writer: Writer): BufferedWriter = new BufferedWriter(writer)
 
     def bw(file: File): BufferedWriter = bw(osw(fos(file)))
 
-    def bw(stream: OutputStream) = new BufferedWriter(osw(stream))
+    def bw(stream: OutputStream): BufferedWriter = new BufferedWriter(osw(stream))
 
-    def osw(stream: OutputStream) = new OutputStreamWriter(stream)
+    def osw(stream: OutputStream): OutputStreamWriter = new OutputStreamWriter(stream)
 
-    def bos(file: File) = new BufferedOutputStream(fos(file))
+    def bos(file: File): BufferedOutputStream = new BufferedOutputStream(fos(file))
 
-    def bos(path: String) = new BufferedOutputStream(fos(expand(path)))
+    def bos(path: String): BufferedOutputStream = new BufferedOutputStream(fos(expand(path)))
 
     def fos(path: String): OutputStream = fos(new File(path))
 
@@ -91,15 +97,15 @@ object IO {
 
     def oos(file: File): ObjectOutputStream = new ObjectOutputStream(bos(fos(file)))
 
-    def bos(os: OutputStream) = new BufferedOutputStream(os)
+    def bos(os: OutputStream): BufferedOutputStream = new BufferedOutputStream(os)
 
     def oos(path: String): ObjectOutputStream = new ObjectOutputStream(bos(fos(expand(path))))
 
     def oos(): ObjectOutputStream = new ObjectOutputStream(System.out)
 
-    def fw(file: File) = new FileWriter(file)
+    def fw(file: File): FileWriter = new FileWriter(file)
 
-    def fw(path: String) = new FileWriter(path)
+    def fw(path: String): FileWriter = new FileWriter(path)
   }
 
 }

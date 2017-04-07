@@ -12,7 +12,7 @@ import scala.io.{BufferedSource, Codec, Source}
   */
 object IO {
 
-  def expand(path: String) = {
+  def expand(path: String): String = {
     if (path == "~" || path.startsWith("~/"))
       System.getProperty("user.home") + path.substring(1)
     else path
@@ -62,11 +62,17 @@ object IO {
     def pwWithSameSubPath(file: File, baseOld: File, baseNew: File): PrintWriter =
       pw(baseNew + s"${ file.getAbsolutePath diff baseOld.getAbsolutePath }")
 
-    def pw(path: String): PrintWriter = pw(fos(expand(path)))
-
     def pw(os: OutputStream) = new PrintWriter(os)
 
     def pw(file: File): PrintWriter = pw(fos(file))
+
+    def pw(path: String): PrintWriter = pw(fos(expand(path)))
+
+    def ps(os: OutputStream) = new PrintStream(os)
+
+    def ps(file: File) = ps(fos(file))
+
+    def ps(path:String) = ps(fos(expand(path)))
 
     def bw(path: String): BufferedWriter = bw(osw(fos(expand(path))))
 

@@ -14,7 +14,10 @@ trait Logging {
   /** Logging levels used for Object Debug.
     * ordering is ALL > DEBUG > LOG > INFO > WARN > ERROR > NONE. */
 
-  object LoggingLevel extends Enumeration {val ALL, DEBUG, LOG, INFO, WARN, ERROR, NONE = Value }
+  object LoggingLevel extends Enumeration {
+    type LoggingLevel = Value
+    val ALL, DEBUG, LOG, INFO, WARN, ERROR, NONE = Value
+  }
 
   import LoggingLevel._
 

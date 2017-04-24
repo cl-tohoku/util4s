@@ -60,7 +60,7 @@ object Controls {
   }
 
   /** utilizes try-with-resource syntax. */
-  implicit class Using[A <: AutoCloseable](resource: A) {
+  implicit class Using[A <: AutoCloseable](val resource: A) extends AnyVal {
     def foreach[B](op: A => B): Unit = {
       try op(resource)
       catch { case e: Exception => throw e }

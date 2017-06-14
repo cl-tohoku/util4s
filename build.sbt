@@ -1,4 +1,3 @@
-import sbt.Keys.crossScalaVersions
 // import AssemblyKeys._ // put this at the top of the file
 
 name := "yuima.util"
@@ -7,11 +6,9 @@ version := "1.0"
 
 scalaVersion := "2.12.2"
 
-//crossScalaVersions := Seq("2.11.10")
-
 scalacOptions += "-deprecation"
 
-libraryDependencies += "org.jline" % "jline" % "3.3.1"
+libraryDependencies += "org.jline" % "jline" % "3.3.0"
 
 libraryDependencies += "com.github.nscala-time" %% "nscala-time" % "2.16.0"
 

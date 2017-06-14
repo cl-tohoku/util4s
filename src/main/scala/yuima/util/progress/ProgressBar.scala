@@ -2,11 +2,12 @@ package yuima.util.progress
 
 import java.time.format.DateTimeFormatter
 import java.time.{Duration, LocalDateTime, LocalTime, Period}
+import javax.smartcardio.TerminalFactory
 
-
-import org.jline.terminal.Terminal
+import org.jline.terminal.TerminalBuilder
 
 import scala.collection.GenTraversableOnce
+import scala.collection.generic.FilterMonadic
 import scala.collection.immutable.List._
 import scala.collection.mutable.ArrayBuffer
 
@@ -48,7 +49,7 @@ class ProgressBar[A, CC[X] <: Traversable[X]](coll         : CC[A],
 
   private var _status = ""
 
-  def status = _status
+  def status: String = _status
 
   def foreach[U](f: A => U): Unit = coll.foreach(count[A] _ andThen f andThen postProcess)
 
@@ -62,7 +63,7 @@ class ProgressBar[A, CC[X] <: Traversable[X]](coll         : CC[A],
   }
 
   private def create() = {
-    val terminalWidth = Terminal.getWidth()
+    val terminalWidth = TerminalBuilder.terminal().getWidth
 
     def typeToString(t: InfoType.Value) = t match {
       case NAME => name + ":"
@@ -79,7 +80,7 @@ class ProgressBar[A, CC[X] <: Traversable[X]](coll         : CC[A],
 
     def speed = f"${ numIter.toDouble / (time.toNanos / 1000000000.0) }%,.0f its/sec"
 
-    def counter = s"%,${ counterDigits }d / %,${ counterDigits }d".format(numIter, total)
+    def counter = (s"%,${ counterDigits }d / %,${ counterDigits }d").format(numIter, total)
 
     def elapsedTime = "PAST:" + durationString(time)
 
@@ -138,6 +139,8 @@ class ProgressBar[A, CC[X] <: Traversable[X]](coll         : CC[A],
   def map[B](f: A => B): CC[B] = coll.map(count[A] _ andThen f andThen postProcess).asInstanceOf[CC[B]]
 
   def filter(f: A => Boolean): CC[A] = coll.filter(count[A] _ andThen f andThen postProcess).asInstanceOf[CC[A]]
+
+  def withFilter(f: A => Boolean): FilterMonadic[A, CC[A]] = coll.withFilter(count[A] _ andThen f andThen postProcess).asInstanceOf[FilterMonadic[A, CC[A]]]
 
   def flatMap[B](f: A => GenTraversableOnce[B]): CC[B] = coll.flatMap(
     count[A] _ andThen f andThen postProcess).asInstanceOf[CC[B]]

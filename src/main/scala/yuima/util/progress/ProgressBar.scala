@@ -3,7 +3,8 @@ package yuima.util.progress
 import java.time.format.DateTimeFormatter
 import java.time.{Duration, LocalDateTime, LocalTime, Period}
 
-import jline.TerminalFactory
+
+import org.jline.terminal.Terminal
 
 import scala.collection.GenTraversableOnce
 import scala.collection.immutable.List._
@@ -61,7 +62,7 @@ class ProgressBar[A, CC[X] <: Traversable[X]](coll         : CC[A],
   }
 
   private def create() = {
-    val terminalWidth = TerminalFactory.get().getWidth
+    val terminalWidth = Terminal.getWidth()
 
     def typeToString(t: InfoType.Value) = t match {
       case NAME => name + ":"

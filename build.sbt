@@ -7,15 +7,15 @@ version := "1.0"
 
 scalaVersion := "2.12.2"
 
-crossScalaVersions := Seq("2.11.10")
+//crossScalaVersions := Seq("2.11.10")
 
 scalacOptions += "-deprecation"
 
-libraryDependencies += "jline" % "jline" % "2.14.4"
+libraryDependencies += "org.jline" % "jline" % "3.3.1"
 
 libraryDependencies += "com.github.nscala-time" %% "nscala-time" % "2.16.0"
 
-libraryDependencies += "org.scalatest" % "scalatest_2.12" % "3.0.1" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 
 libraryDependencies += "org.apache.commons" % "commons-compress" % "1.14"
 

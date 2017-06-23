@@ -98,7 +98,7 @@ package object control {
     }
   }
 
-  implicit class WithPB[A, CC[X] <: Traversable[X]](val collection: CC[A]) extends AnyVal {
+  implicit class WithPB[A, CC[A] <: TraversableOnce[A]](val collection: CC[A]) extends AnyVal {
     def withProgressBar = ProgressBar(collection)
 
     def withProgressBar(name: String) = ProgressBar(collection, name)

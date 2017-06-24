@@ -23,8 +23,8 @@ trait Logging {
 
   val EPOCH_LINE = 20
 
-  val iterationCounter = mutable.Map[String, Int]()
-  val epochCounter = mutable.Map[String, Int]()
+  private val iterationCounter = mutable.Map[String, Int]()
+  private val epochCounter = mutable.Map[String, Int]()
 
   protected var loggingLevel = INFO
 
@@ -40,7 +40,7 @@ trait Logging {
     }
   }
 
-  def debugln() = loggingLevel match {
+  def debugln(): Unit = loggingLevel match {
     case ALL => Console.err.println()
     case DEBUG => Console.err.println()
     case _ =>
@@ -59,42 +59,42 @@ trait Logging {
   }
 
 
-  def debug(s: => Any) = loggingLevel match {
+  def debug(s: => Any): Unit = loggingLevel match {
     case ALL => Console.err.print(s)
     case DEBUG => Console.err.print(s)
     case _ =>
   }
 
-  def logln() = loggingLevel match {
+  def logln(): Unit = loggingLevel match {
     case ALL => Console.err.println()
     case DEBUG => Console.err.println()
     case LOG => Console.err.println()
     case _ =>
   }
 
-  def logln(s: => Any) = loggingLevel match {
+  def logln(s: => Any): Unit = loggingLevel match {
     case ALL => Console.err.println(Console.BLUE + s + Console.RESET)
     case DEBUG => Console.err.println(Console.BLUE + s + Console.RESET)
     case LOG => Console.err.println(Console.BLUE + s + Console.RESET)
     case _ =>
   }
 
-  def log(s: => Any) = loggingLevel match {
+  def log(s: => Any): Unit = loggingLevel match {
     case ALL => Console.err.print(Console.BLUE + s + Console.RESET)
     case DEBUG => Console.err.print(Console.BLUE + s + Console.RESET)
     case LOG => Console.err.print(Console.BLUE + s + Console.RESET)
     case _ =>
   }
 
-  def info(s: => Any) = loggingLevel match {
-    case ALL => Console.err.println(Console.GREEN + s + Console.RESET)
-    case DEBUG => Console.err.println(Console.GREEN + s + Console.RESET)
-    case LOG => Console.err.println(Console.GREEN + s + Console.RESET)
-    case INFO => Console.err.println(Console.GREEN + s + Console.RESET)
+  def info(s: => Any): Unit = loggingLevel match {
+    case ALL => Console.err.print(Console.GREEN + s + Console.RESET)
+    case DEBUG => Console.err.print(Console.GREEN + s + Console.RESET)
+    case LOG => Console.err.print(Console.GREEN + s + Console.RESET)
+    case INFO => Console.err.print(Console.GREEN + s + Console.RESET)
     case _ =>
   }
 
-  def infoln() = loggingLevel match {
+  def infoln(): Unit = loggingLevel match {
     case ALL => Console.err.println()
     case DEBUG => Console.err.println()
     case LOG => Console.err.println()
@@ -102,7 +102,7 @@ trait Logging {
     case _ =>
   }
 
-  def infoln(s: => Any) = loggingLevel match {
+  def infoln(s: => Any): Unit = loggingLevel match {
     case ALL => Console.err.println(Console.GREEN + s + Console.RESET)
     case DEBUG => Console.err.println(Console.GREEN + s + Console.RESET)
     case LOG => Console.err.println(Console.GREEN + s + Console.RESET)
@@ -110,16 +110,16 @@ trait Logging {
     case _ =>
   }
 
-  def warn(s: => Any) = loggingLevel match {
-    case ALL => Console.err.println(Console.YELLOW + s + Console.RESET)
-    case DEBUG => Console.err.println(Console.YELLOW + s + Console.RESET)
-    case LOG => Console.err.println(Console.YELLOW + s + Console.RESET)
-    case INFO => Console.err.println(Console.YELLOW + s + Console.RESET)
-    case WARN => Console.err.println(Console.YELLOW + s + Console.RESET)
+  def warn(s: => Any): Unit = loggingLevel match {
+    case ALL => Console.err.print(Console.YELLOW + s + Console.RESET)
+    case DEBUG => Console.err.print(Console.YELLOW + s + Console.RESET)
+    case LOG => Console.err.print(Console.YELLOW + s + Console.RESET)
+    case INFO => Console.err.print(Console.YELLOW + s + Console.RESET)
+    case WARN => Console.err.print(Console.YELLOW + s + Console.RESET)
     case _ =>
   }
 
-  def error(s: => Any) = loggingLevel match {
+  def error(s: => Any): Unit = loggingLevel match {
     case ALL => Console.err.print(Console.RED + s + Console.RESET)
     case DEBUG => Console.err.print(Console.RED + s + Console.RESET)
     case LOG => Console.err.print(Console.RED + s + Console.RESET)
@@ -129,7 +129,7 @@ trait Logging {
     case _ =>
   }
 
-  def errorln() = loggingLevel match {
+  def errorln(): Unit = loggingLevel match {
     case ALL => Console.err.println()
     case DEBUG => Console.err.println()
     case LOG => Console.err.println()
@@ -139,7 +139,7 @@ trait Logging {
     case _ =>
   }
 
-  def errorln(s: => Any) = loggingLevel match {
+  def errorln(s: => Any): Unit = loggingLevel match {
     case ALL => Console.err.println(Console.RED + s + Console.RESET)
     case DEBUG => Console.err.println(Console.RED + s + Console.RESET)
     case LOG => Console.err.println(Console.RED + s + Console.RESET)

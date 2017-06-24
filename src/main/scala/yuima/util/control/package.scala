@@ -21,8 +21,6 @@ import java.math.MathContext
 
 import yuima.util.progress.ProgressBar
 
-import scala.collection.Traversable
-
 package object control {
   def repeat(n: Int)(op: => Unit) {
     for (i <- 0 until n) op
@@ -39,6 +37,9 @@ package object control {
 
   def withLogFile[A](log: PrintStream)(op: => A): A = withRedirectingTo(log, log)(op)
 
+  def withRedirectingTo[A](out: PrintStream, err: PrintStream)(op: => A): A =
+    Console.withOut(out) { Console.withErr(err)(op) }
+
   def withLogFile[A](file: File)(op: => A): A = withLogFile(IO.Out.ps(file))(op)
 
   def withRedirectingTo[A](out: String, err: String)(op: => A): A =
@@ -53,9 +54,6 @@ package object control {
   def withRedirectingTo[A](out: String, err: PrintStream)(op: => A): A = withRedirectingTo(IO.Out.ps(out), err)(op)
 
   def withRedirectingTo[A](out: File, err: PrintStream)(op: => A): A = withRedirectingTo(IO.Out.ps(out), err)(op)
-
-  def withRedirectingTo[A](out: PrintStream, err: PrintStream)(op: => A): A =
-    Console.withOut(out) { Console.withErr(err)(op) }
 
   def withRedirectingTo[A](out: PrintStream, err: String)(op: => A): A = withRedirectingTo(out, IO.Out.ps(err))(op)
 

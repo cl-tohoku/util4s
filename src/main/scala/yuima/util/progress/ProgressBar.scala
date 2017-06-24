@@ -56,6 +56,12 @@ class ProgressBar[A, CC[X] <: TraversableOnce[X]](coll: CC[A],
 
   def filter(f: A => Boolean): CC[A] = coll.filter(count[A] _ andThen f andThen postProcess).asInstanceOf[CC[A]]
 
+  def withFilter(f: A => Boolean): FilterMonadic[A, CC[A]] = coll.withFilter(
+    count[A] _ andThen f andThen postProcess).asInstanceOf[FilterMonadic[A, CC[A]]]
+
+  def flatMap[B](f: A => GenTraversableOnce[B]): CC[B] = coll.flatMap(
+    count[A] _ andThen f andThen postProcess).asInstanceOf[CC[B]]
+
   private def count[B](b: B) = {
     if (numIter % unit == 0 || numIter == total || numIter == 1) {
       time = Duration.between(timeStart, LocalDateTime.now())
@@ -139,12 +145,6 @@ class ProgressBar[A, CC[X] <: TraversableOnce[X]](coll: CC[A],
     b
   }
 
-  def withFilter(f: A => Boolean): FilterMonadic[A, CC[A]] = coll.withFilter(
-    count[A] _ andThen f andThen postProcess).asInstanceOf[FilterMonadic[A, CC[A]]]
-
-  def flatMap[B](f: A => GenTraversableOnce[B]): CC[B] = coll.flatMap(
-    count[A] _ andThen f andThen postProcess).asInstanceOf[CC[B]]
-
   private def digits(num: Int, d: Int = 1): Int = num / 10 match {
     case 0 => d
     case n => digits(n, d + 1)
@@ -203,7 +203,7 @@ object ProgressBar {
   }
 
   def apply[A, CC[A] <: TraversableOnce[A]](coll: CC[A]): ProgressBar[A, CC] = {
-    if(coll.isTraversableAgain) new ProgressBar(coll, coll.size)
+    if (coll.isTraversableAgain) new ProgressBar(coll, coll.size)
     else {
       val (a, b) = coll.toIterator.duplicate
       new ProgressBar(a.asInstanceOf[CC[A]], b.size)

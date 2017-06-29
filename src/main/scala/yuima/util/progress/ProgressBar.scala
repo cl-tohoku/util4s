@@ -36,7 +36,7 @@ class ProgressBar[A, CC[X] <: TraversableOnce[X]](coll: CC[A],
   private val timeStart = LocalDateTime.now()
   private val counterDigits = digits(total)
   private val (prefixInfo, rest) = infoTypes.span(_ != BAR)
-  private val unit = (total / 100) max 1
+  private val unit = (total / 500) max 1
   private val secondOfDay = 24 * 60 * 60
 
   ProgressBar.bars.append(this)
@@ -89,6 +89,7 @@ class ProgressBar[A, CC[X] <: TraversableOnce[X]](coll: CC[A],
 
     def speed = f"${ numIter.toDouble / (time.toNanos / 1000000000.0) }%,.0f its/sec"
 
+    //noinspection ScalaUnnecessaryParentheses
     def counter = (s"%,${ counterDigits }d / %,${ counterDigits }d").format(numIter, total)
 
     def elapsedTime = "PAST:" + durationString(time)
@@ -194,7 +195,7 @@ object ProgressBar {
     }
   }
 
-  def apply[A, CC[A] <: TraversableOnce[A]](coll: CC[A], name: String): ProgressBar[A, CC] = {
+  def apply[A, CC[X] <: TraversableOnce[X]](coll: CC[A], name: String): ProgressBar[A, CC] = {
     if (coll.isTraversableAgain) new ProgressBar(coll, coll.size, name)
     else {
       val (a, b) = coll.toIterator.duplicate
@@ -202,7 +203,7 @@ object ProgressBar {
     }
   }
 
-  def apply[A, CC[A] <: TraversableOnce[A]](coll: CC[A]): ProgressBar[A, CC] = {
+  def apply[A, CC[X] <: TraversableOnce[X]](coll: CC[A]): ProgressBar[A, CC] = {
     if (coll.isTraversableAgain) new ProgressBar(coll, coll.size)
     else {
       val (a, b) = coll.toIterator.duplicate

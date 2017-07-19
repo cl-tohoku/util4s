@@ -112,8 +112,9 @@ package object control {
     def withProgressBar(length: Int): ProgressBar[A, CC] = ProgressBar(collection, length)
 
     def withProgressBar(name: String): ProgressBar[A, CC] = {
-      if (collection.isTraversableAgain)
+      if (collection.isTraversableAgain) {
         ProgressBar(collection, collection.size, name)
+      }
       else {
         val (a, b) = collection.asInstanceOf[Iterator[A]].duplicate
         ProgressBar(a.asInstanceOf[CC[A]], b.size, name)

@@ -3,8 +3,6 @@ package yuima.util.progress
 import java.time.format.DateTimeFormatter
 import java.time.{Duration, LocalDateTime, LocalTime, Period}
 
-import org.jline.terminal.TerminalBuilder
-
 import scala.collection.GenTraversableOnce
 import scala.collection.generic.FilterMonadic
 import scala.collection.immutable.List._
@@ -72,7 +70,12 @@ class ProgressBar[A, CC[X] <: TraversableOnce[X]](coll: CC[A],
   }
 
   private def create() = {
-    val terminalWidth = TerminalBuilder.terminal().getWidth
+    import scala.sys.process._
+
+    val terminalWidth = {
+      //      TerminalBuilder.terminal().getWidth
+      Seq("bash", "-c", "tput cols").!!.trim.toInt
+    }
 
     def typeToString(t: InfoType.Value) = t match {
       case NAME => name + ":"
@@ -195,19 +198,11 @@ object ProgressBar {
     }
   }
 
-  def apply[A, CC[X] <: TraversableOnce[X]](coll: CC[A], name: String): ProgressBar[A, CC] = {
-    if (coll.isTraversableAgain) new ProgressBar(coll, coll.size, name)
-    else {
-      val (a, b) = coll.toIterator.duplicate
-      new ProgressBar(a.asInstanceOf[CC[A]], b.size, name)
-    }
+  def apply[A, CC[X] <: TraversableOnce[X]](coll: CC[A], length: Int, name: String): ProgressBar[A, CC] = {
+    new ProgressBar(coll, length, name)
   }
 
-  def apply[A, CC[X] <: TraversableOnce[X]](coll: CC[A]): ProgressBar[A, CC] = {
-    if (coll.isTraversableAgain) new ProgressBar(coll, coll.size)
-    else {
-      val (a, b) = coll.toIterator.duplicate
-      new ProgressBar(a.asInstanceOf[CC[A]], b.size)
-    }
+  def apply[A, CC[X] <: TraversableOnce[X]](coll: CC[A], length: Int): ProgressBar[A, CC] = {
+    new ProgressBar(coll, length)
   }
 }

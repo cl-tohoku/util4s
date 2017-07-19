@@ -92,10 +92,20 @@ object Controls {
     }
   }
 
-  implicit class WithPB[A, CC[X] <: Traversable[X]](val collection: CC[A]) extends AnyVal {
-    def withProgressBar = ProgressBar(collection)
+  implicit class WithPBIterable[A, CC[A] <: Iterator[A]](val collection: CC[A]) extends AnyVal {
+    def withProgressBar = {
+      val (a, b) = collection.duplicate
+      ProgressBar(a, b.size)
+    }
 
-    def withProgressBar(name: String) = ProgressBar(collection, name)
+    def withProgressBar(length: Int) = ProgressBar(collection, length)
+
+    def withProgressBar(name: String, length: Int) = ProgressBar(collection, length, name)
   }
 
+  implicit class WithPBTraversable[A, CC[A] <: Traversable[A]](val collection: CC[A]) extends AnyVal {
+    def withProgressBar = ProgressBar(collection, collection.size)
+
+    def withProgressBar(name: String) = ProgressBar(collection, collection.size, name)
+  }
 }

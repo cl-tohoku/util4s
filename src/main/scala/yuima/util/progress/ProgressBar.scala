@@ -13,22 +13,22 @@ import scala.collection.{IterableOnce, IterableOnceOps}
 import yuima.util.progress.InfoType._
 
 class ProgressBar[A, CC[X] <: IterableOnce[X]](coll: CC[A] with IterableOnceOps[A, CC, CC[A]],
-                                           total: Int,
-                                           name: String = "",
-                                           maxWidth: Int = 100,
-                                           infoTypes: List[InfoType.Value] = List(InfoType.NAME,
-                                                                                  InfoType.MESSAGE,
-                                                                                  InfoType.PARCENT,
-                                                                                  InfoType.BAR,
-                                                                                  InfoType.COUNTER,
-                                                                                  InfoType.TIME,
-                                                                                  InfoType.ETA,
-                                                                                  InfoType.SPEED),
-                                           startChar: String = "[",
-                                           doneChar: String = "=",
-                                           currentChar: String = ">",
-                                           remainingChar: String = " ",
-                                           endChar: String = "]") {
+                                               total: Int,
+                                               name: String = "",
+                                               maxWidth: Int = 100,
+                                               infoTypes: List[InfoType.Value] = List(InfoType.NAME,
+                                                                                      InfoType.MESSAGE,
+                                                                                      InfoType.PARCENT,
+                                                                                      InfoType.BAR,
+                                                                                      InfoType.COUNTER,
+                                                                                      InfoType.TIME,
+                                                                                      InfoType.ETA,
+                                                                                      InfoType.SPEED),
+                                               startChar: String = "[",
+                                               doneChar: String = "=",
+                                               currentChar: String = ">",
+                                               remainingChar: String = " ",
+                                               endChar: String = "]") {
   private val timeStart = LocalDateTime.now()
   private val counterDigits = digits(total)
   private val (prefixInfo, rest) = infoTypes.span(_ != BAR)
@@ -47,6 +47,11 @@ class ProgressBar[A, CC[X] <: IterableOnce[X]](coll: CC[A] with IterableOnceOps[
   def status: String = _status
 
   def foreach[U](f: A => U): Unit = coll.iterator.foreach(count[A] _ andThen f andThen postProcess)
+
+  def map[B](f: A => B): CC[B] = coll.iterator.map(count[A] _ andThen f andThen postProcess).asInstanceOf[CC[B]]
+
+  def filter(f: A => Boolean): CC[A] = coll.iterator.filter(
+    count[A] _ andThen f andThen postProcess).asInstanceOf[CC[A]]
 
   private def count[B](b: B) = {
     if (numIter % unit == 0 || numIter == total || numIter == 1) {
@@ -137,11 +142,6 @@ class ProgressBar[A, CC[X] <: IterableOnce[X]](coll: CC[A] with IterableOnceOps[
     b
   }
 
-  def map[B](f: A => B): CC[B] = coll.iterator.map(count[A] _ andThen f andThen postProcess).asInstanceOf[CC[B]]
-
-  def filter(f: A => Boolean): CC[A] = coll.iterator.filter(
-    count[A] _ andThen f andThen postProcess).asInstanceOf[CC[A]]
-
   def withFilter(f: A => Boolean) = coll.iterator.withFilter(
     count[A] _ andThen f andThen postProcess).asInstanceOf[CC[A]]
 
@@ -199,7 +199,7 @@ object ProgressBar {
   }
 
   def apply[A, CC[X] <: IterableOnce[X]](coll: CC[A] with IterableOnceOps[A, CC, CC[A]],
-                                                      length: Int, name: String): ProgressBar[A, CC] = {
+                                         length: Int, name: String): ProgressBar[A, CC] = {
     new ProgressBar(coll, length, name)
   }
 

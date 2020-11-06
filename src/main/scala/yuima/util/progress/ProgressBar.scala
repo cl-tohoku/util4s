@@ -12,7 +12,7 @@ import scala.collection.mutable.ArrayBuffer
 
 import yuima.util.progress.InfoType._
 
-class ProgressBar[A, CC[X] <: IterableOnce[X]](coll: CC[A],
+class ProgressBar[A, CC[X] <: Iterable[X]](coll: CC[A],
                                                total: Int,
                                                name: String = "",
                                                maxWidth: Int = 100,
@@ -180,21 +180,21 @@ object ProgressBar {
 
   import InfoType._
 
-  def apply[A, CC[X] <: TraversableOnce[X]](coll: CC[A], name: String, maxWidth: Int,
+  def apply[A, CC[X] <: Iterable[X]](coll: CC[A], name: String, maxWidth: Int,
                                             format: String): ProgressBar[A, CC] = {
     val Array(startChar, doneChar, currentChar, remainingChar, endChar) = format.split("")
 
-    //    if (coll.isTraversableAgain) {
+        if (coll.isTraversableAgain) {
     new ProgressBar(coll, coll.iterator.size, name, maxWidth,
                     List(NAME, MESSAGE, BAR, COUNTER, TIME, ETA, SPEED),
                     startChar, doneChar, currentChar, remainingChar, endChar)
-    //    }
-    //    else {
-    //      val (a, b) = coll.toIterator.duplicate
-    //      new ProgressBar(a.asInstanceOf[CC[A]], b.size, name, maxWidth,
-    //                      List(NAME, MESSAGE, BAR, COUNTER, TIME, ETA, SPEED),
-    //                      startChar, doneChar, currentChar, remainingChar, endChar)
-    //    }
+        }
+        else {
+          val (a, b) = coll.iterator.duplicate
+          new ProgressBar(a.asInstanceOf[CC[A]], b.size, name, maxWidth,
+                          List(NAME, MESSAGE, BAR, COUNTER, TIME, ETA, SPEED),
+                          startChar, doneChar, currentChar, remainingChar, endChar)
+        }
   }
 
   def apply[A, CC[X] <: TraversableOnce[X]](coll: CC[A], length: Int, name: String): ProgressBar[A, CC] = {

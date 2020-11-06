@@ -35,9 +35,12 @@ package object control {
 
   def withLogFile[A](file: String)(op: => A): A = withLogFile(IO.Out.ps(file))(op)
 
+  def withLogFile[A](file: File)(op: => A): A = withLogFile(IO.Out.ps(file))(op)
+
   def withLogFile[A](log: PrintStream)(op: => A): A = withRedirectingTo(log, log)(op)
 
-  def withLogFile[A](file: File)(op: => A): A = withLogFile(IO.Out.ps(file))(op)
+  def withRedirectingTo[A](out: PrintStream, err: PrintStream)(op: => A): A =
+    Console.withOut(out) { Console.withErr(err)(op) }
 
   def withRedirectingTo[A](out: String, err: String)(op: => A): A =
     withRedirectingTo(IO.Out.ps(out), IO.Out.ps(err))(op)
@@ -47,9 +50,6 @@ package object control {
   def withRedirectingTo[A](out: String, err: File)(op: => A): A = withRedirectingTo(IO.Out.ps(out), IO.Out.ps(err))(op)
 
   def withRedirectingTo[A](out: File, err: String)(op: => A): A = withRedirectingTo(IO.Out.ps(out), IO.Out.ps(err))(op)
-
-  def withRedirectingTo[A](out: PrintStream, err: PrintStream)(op: => A): A =
-    Console.withOut(out) { Console.withErr(err)(op) }
 
   def withRedirectingTo[A](out: String, err: PrintStream)(op: => A): A = withRedirectingTo(IO.Out.ps(out), err)(op)
 
@@ -96,26 +96,26 @@ package object control {
     }
   }
 
-  implicit class WithPBIterable[A, CC[X] <: IterableOnce[X]](val collection: CC[A]) extends AnyVal {
+  implicit class WithPBIterable[A, CC[X] <: Iterable[X]](val collection: CC[A]) extends AnyVal {
 
     def withProgressBar: ProgressBar[A, CC] = {
-      //      if (collection.isTraversableAgain) {
-      ProgressBar(collection, collection.iterator.size)
-      //      }
-      //        val (a, b) = collection.asInstanceOf[Iterator[A]].duplicate
-      //        ProgressBar(a.asInstanceOf[CC[A]], b.size)
+      if (collection.isTraversableAgain) {
+        ProgressBar(collection, collection.iterator.size)
+      }
+      val (a, b) = collection.asInstanceOf[Iterator[A]].duplicate
+      ProgressBar(a.asInstanceOf[CC[A]], b.size)
     }
 
     def withProgressBar(length: Int): ProgressBar[A, CC] = ProgressBar(collection, length)
 
     def withProgressBar(name: String): ProgressBar[A, CC] = {
-      //      if (collection.isTraversableAgain) {
-      ProgressBar(collection, collection.iterator.size, name)
-      //      }
-      //      else {
-      //        val (a, b) = collection.asInstanceOf[Iterator[A]].duplicate
-      //        ProgressBar(a.asInstanceOf[CC[A]], b.size, name)
-      //      }
+      if (collection.isTraversableAgain) {
+        ProgressBar(collection, collection.iterator.size, name)
+      }
+      else {
+        val (a, b) = collection.asInstanceOf[Iterator[A]].duplicate
+        ProgressBar(a.asInstanceOf[CC[A]], b.size, name)
+      }
     }
 
     def withProgressBar(name: String, length: Int): ProgressBar[A, CC] = ProgressBar(collection, length, name)

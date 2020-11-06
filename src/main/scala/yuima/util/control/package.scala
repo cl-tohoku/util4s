@@ -21,6 +21,8 @@ import java.math.MathContext
 
 import yuima.util.progress.ProgressBar
 
+import scala.collection.IterableOnceOps
+
 package object control {
   def repeat(n: Int)(op: => Unit) {
     for (i <- 0 until n) op
@@ -96,25 +98,25 @@ package object control {
     }
   }
 
-  implicit class WithPBIterable[A, CC[X] <: Iterable[X]](val collection: CC[A]) extends AnyVal {
+  implicit class WithPBIterable[A, CC[X] <: IterableOnce[X]](val collection: CC[A] with IterableOnceOps[A, CC, CC[A]])  extends AnyVal {
 
     def withProgressBar: ProgressBar[A, CC] = {
       if (collection.isTraversableAgain) {
-        ProgressBar(collection, collection.iterator.size)
+        ProgressBar(collection, collection.size)
       }
       val (a, b) = collection.asInstanceOf[Iterator[A]].duplicate
-      ProgressBar(a.asInstanceOf[CC[A]], b.size)
+      ProgressBar(a.asInstanceOf[CC[A] with IterableOnceOps[A, CC, CC[A]]], b.size)
     }
 
     def withProgressBar(length: Int): ProgressBar[A, CC] = ProgressBar(collection, length)
 
     def withProgressBar(name: String): ProgressBar[A, CC] = {
       if (collection.isTraversableAgain) {
-        ProgressBar(collection, collection.iterator.size, name)
+        ProgressBar(collection, collection.size, name)
       }
       else {
         val (a, b) = collection.asInstanceOf[Iterator[A]].duplicate
-        ProgressBar(a.asInstanceOf[CC[A]], b.size, name)
+        ProgressBar(a.asInstanceOf[CC[A] with IterableOnceOps[A, CC, CC[A]]], b.size, name)
       }
     }
 

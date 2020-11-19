@@ -144,12 +144,12 @@ object OptArg {
                        argNum: Int, validator: Option[Validator[Unit]], op: Unit => Unit)
   : PartialFunction[(List[String], OptionParser), Unit] = {
     case (opt :: tail, parser) if prefixMatch(opt, abbr) && !parser.exclusiveFlag(full) =>
-      op(Unit)
+      op(())
       val key = abbr.get
       //      parser.parse(opt :: tail)
       setExclusiveFlag(full, parser)
     case (opt :: tail, parser) if (opt == full || abbr.contains(opt)) && !parser.exclusiveFlag(full) =>
-      op(Unit)
+      op(())
       //      parser.parse(tail)
       setExclusiveFlag(full, parser)
   }

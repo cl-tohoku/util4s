@@ -21,7 +21,7 @@ import java.math.MathContext
 
 import yuima.util.progress.ProgressBar
 
-import scala.collection.IterableOnceOps
+import scala.collection.TraversableOnce
 
 package object control {
   def repeat(n: Int)(op: => Unit) {
@@ -31,21 +31,21 @@ package object control {
   def leafFiles(path: String): Seq[File] = leafFiles(new File(IO.expand(path)))
 
   def leafFiles(path: File)(implicit fileFilter: File => Boolean = f => true): Seq[File] = {
-    if (path.isDirectory) path.listFiles().sorted.toSeq.flatMap(leafFiles)
+    if (path.isDirectory) path.listFiles().sorted.flatMap(leafFiles)
     else Array(path).filter(fileFilter)
   }
 
   def withLogFile[A](file: String)(op: => A): A = withLogFile(IO.Out.ps(file))(op)
 
-  def withLogFile[A](file: File)(op: => A): A = withLogFile(IO.Out.ps(file))(op)
-
   def withLogFile[A](log: PrintStream)(op: => A): A = withRedirectingTo(log, log)(op)
 
-  def withRedirectingTo[A](out: PrintStream, err: PrintStream)(op: => A): A =
-    Console.withOut(out) { Console.withErr(err)(op) }
+  def withLogFile[A](file: File)(op: => A): A = withLogFile(IO.Out.ps(file))(op)
 
   def withRedirectingTo[A](out: String, err: String)(op: => A): A =
     withRedirectingTo(IO.Out.ps(out), IO.Out.ps(err))(op)
+
+  def withRedirectingTo[A](out: PrintStream, err: PrintStream)(op: => A): A =
+    Console.withOut(out) { Console.withErr(err)(op) }
 
   def withRedirectingTo[A](out: File, err: File)(op: => A): A = withRedirectingTo(IO.Out.ps(out), IO.Out.ps(err))(op)
 
@@ -98,14 +98,15 @@ package object control {
     }
   }
 
-  implicit class WithPBIterable[A, CC[X] <: IterableOnce[X]](val collection: CC[A] with IterableOnceOps[A, CC, CC[A]])  extends AnyVal {
+  implicit class WithPBIterable[A, CC[X] <: TraversableOnce[X]](val collection: CC[A]) extends AnyVal {
 
     def withProgressBar: ProgressBar[A, CC] = {
-      if (collection.isTraversableAgain) {
+      if (collection.isTraversableAgain)
         ProgressBar(collection, collection.size)
+      else {
+        val (a, b) = collection.asInstanceOf[Iterator[A]].duplicate
+        ProgressBar(a.asInstanceOf[CC[A]], b.size)
       }
-      val (a, b) = collection.asInstanceOf[Iterator[A]].duplicate
-      ProgressBar(a.asInstanceOf[CC[A] with IterableOnceOps[A, CC, CC[A]]], b.size)
     }
 
     def withProgressBar(length: Int): ProgressBar[A, CC] = ProgressBar(collection, length)
@@ -116,7 +117,7 @@ package object control {
       }
       else {
         val (a, b) = collection.asInstanceOf[Iterator[A]].duplicate
-        ProgressBar(a.asInstanceOf[CC[A] with IterableOnceOps[A, CC, CC[A]]], b.size, name)
+        ProgressBar(a.asInstanceOf[CC[A]], b.size, name)
       }
     }
 

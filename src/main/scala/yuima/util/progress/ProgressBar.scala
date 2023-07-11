@@ -3,8 +3,10 @@ package yuima.util.progress
 import java.time.format.DateTimeFormatter
 import java.time.{Duration, LocalDateTime, LocalTime, Period}
 
+import scala.collection.GenTraversableOnce
+import scala.collection.generic.FilterMonadic
+import scala.collection.immutable.List._
 import scala.collection.mutable.ArrayBuffer
-import scala.collection.{IterableOnce, IterableOnceOps}
 
 /** @author Yuichiroh Matsubayashi
   *         Created on 2016/07/01.
@@ -12,23 +14,23 @@ import scala.collection.{IterableOnce, IterableOnceOps}
 
 import yuima.util.progress.InfoType._
 
-class ProgressBar[A, CC[X] <: IterableOnce[X]](coll: CC[A] with IterableOnceOps[A, CC, CC[A]],
-                                               total: Int,
-                                               name: String = "",
-                                               maxWidth: Int = 100,
-                                               infoTypes: List[InfoType.Value] = List(InfoType.NAME,
-                                                                                      InfoType.MESSAGE,
-                                                                                      InfoType.PARCENT,
-                                                                                      InfoType.BAR,
-                                                                                      InfoType.COUNTER,
-                                                                                      InfoType.TIME,
-                                                                                      InfoType.ETA,
-                                                                                      InfoType.SPEED),
-                                               startChar: String = "[",
-                                               doneChar: String = "=",
-                                               currentChar: String = ">",
-                                               remainingChar: String = " ",
-                                               endChar: String = "]") {
+class ProgressBar[A, CC[X] <: TraversableOnce[X]](coll: CC[A],
+                                                  total: Int,
+                                                  name: String = "",
+                                                  maxWidth: Int = 100,
+                                                  infoTypes: List[InfoType.Value] = List(InfoType.NAME,
+                                                                                         InfoType.MESSAGE,
+                                                                                         InfoType.PARCENT,
+                                                                                         InfoType.BAR,
+                                                                                         InfoType.COUNTER,
+                                                                                         InfoType.TIME,
+                                                                                         InfoType.ETA,
+                                                                                         InfoType.SPEED),
+                                                  startChar: String = "[",
+                                                  doneChar: String = "=",
+                                                  currentChar: String = ">",
+                                                  remainingChar: String = " ",
+                                                  endChar: String = "]") {
   private val timeStart = LocalDateTime.now()
   private val counterDigits = digits(total)
   private val (prefixInfo, rest) = infoTypes.span(_ != BAR)
@@ -46,12 +48,17 @@ class ProgressBar[A, CC[X] <: IterableOnce[X]](coll: CC[A] with IterableOnceOps[
 
   def status: String = _status
 
-  def foreach[U](f: A => U): Unit = coll.iterator.foreach(count[A] _ andThen f andThen postProcess)
+  def foreach[U](f: A => U): Unit = coll.foreach(count[A] _ andThen f andThen postProcess)
 
-  def map[B](f: A => B): CC[B] = coll.iterator.map(count[A] _ andThen f andThen postProcess).asInstanceOf[CC[B]]
+  def map[B](f: A => B): CC[B] = coll.map(count[A] _ andThen f andThen postProcess).asInstanceOf[CC[B]]
 
-  def filter(f: A => Boolean): CC[A] = coll.iterator.filter(
-    count[A] _ andThen f andThen postProcess).asInstanceOf[CC[A]]
+  def filter(f: A => Boolean): CC[A] = coll.filter(count[A] _ andThen f andThen postProcess).asInstanceOf[CC[A]]
+
+  def withFilter(f: A => Boolean): FilterMonadic[A, CC[A]] = coll.withFilter(
+    count[A] _ andThen f andThen postProcess).asInstanceOf[FilterMonadic[A, CC[A]]]
+
+  def flatMap[B](f: A => GenTraversableOnce[B]): CC[B] = coll.flatMap(
+    count[A] _ andThen f andThen postProcess).asInstanceOf[CC[B]]
 
   private def count[B](b: B) = {
     if (numIter % unit == 0 || numIter == total || numIter == 1) {
@@ -114,8 +121,8 @@ class ProgressBar[A, CC[X] <: IterableOnce[X]](coll: CC[A] with IterableOnceOps[
         if (numIter == total) doneChar * progress
         else doneChar * (progress - 1) + currentChar
       } +
-        remainingChar * remaining +
-        endChar
+      remainingChar * remaining +
+      endChar
     }
 
     lazy val prefix = prefixInfo.map(typeToString).mkString(" ")
@@ -141,12 +148,6 @@ class ProgressBar[A, CC[X] <: IterableOnce[X]](coll: CC[A] with IterableOnceOps[
     if (ProgressBar.bars.isEmpty) Console.err.println()
     b
   }
-
-  def withFilter(f: A => Boolean) = coll.iterator.withFilter(
-    count[A] _ andThen f andThen postProcess).asInstanceOf[CC[A]]
-
-  def flatMap[B](f: A => IterableOnce[B]): CC[B] = coll.iterator.flatMap(
-    count[A] _ andThen f andThen postProcess).asInstanceOf[CC[B]]
 
   private def digits(num: Int, d: Int = 1): Int = num / 10 match {
     case 0 => d
@@ -180,9 +181,8 @@ object ProgressBar {
 
   import InfoType._
 
-  def apply[A, CC[X] <: IterableOnce[X]](coll: CC[A] with IterableOnceOps[A, CC, CC[A]],
-                                         name: String, maxWidth: Int,
-                                         format: String): ProgressBar[A, CC] = {
+  def apply[A, CC[X] <: TraversableOnce[X]](coll: CC[A], name: String, maxWidth: Int,
+                                            format: String): ProgressBar[A, CC] = {
     val Array(startChar, doneChar, currentChar, remainingChar, endChar) = format.split("")
 
     if (coll.isTraversableAgain) {
@@ -191,20 +191,18 @@ object ProgressBar {
                       startChar, doneChar, currentChar, remainingChar, endChar)
     }
     else {
-      val (a, b) = coll.iterator.duplicate
-      new ProgressBar(a.asInstanceOf[CC[A] with IterableOnceOps[A, CC, CC[A]]], b.size, name, maxWidth,
+      val (a, b) = coll.toIterator.duplicate
+      new ProgressBar(a.asInstanceOf[CC[A]], b.size, name, maxWidth,
                       List(NAME, MESSAGE, BAR, COUNTER, TIME, ETA, SPEED),
                       startChar, doneChar, currentChar, remainingChar, endChar)
     }
   }
 
-  def apply[A, CC[X] <: IterableOnce[X]](coll: CC[A] with IterableOnceOps[A, CC, CC[A]],
-                                         length: Int, name: String): ProgressBar[A, CC] = {
+  def apply[A, CC[X] <: TraversableOnce[X]](coll: CC[A], length: Int, name: String): ProgressBar[A, CC] = {
     new ProgressBar(coll, length, name)
   }
 
-  def apply[A, CC[X] <: IterableOnce[X]](coll: CC[A] with IterableOnceOps[A, CC, CC[A]],
-                                         length: Int): ProgressBar[A, CC] = {
+  def apply[A, CC[X] <: TraversableOnce[X]](coll: CC[A], length: Int): ProgressBar[A, CC] = {
     new ProgressBar(coll, length)
   }
 }
